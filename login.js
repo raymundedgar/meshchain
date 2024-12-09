@@ -10,7 +10,7 @@ function generateUniqueId() {
 
 async function saveUniqueIdToFile(unique_id) {
     await fs.appendFile('unique_id.txt', `${unique_id}\n`, 'utf-8');
-    logger("唯一 ID 已成功保存到 unique_id.txt 文件！", "success");
+    logger("Unique ID successfully saved to unique_id.txt file!", "success");
 }
 
 async function linkNode(unique_id) {
@@ -26,10 +26,10 @@ async function linkNode(unique_id) {
     }, payload);
 
     if (response && response.id) {
-        logger(`节点已成功链接！ID: ${unique_id}`, "success");
+        logger(`Node successfully linked! ID: ${unique_id}`, "success");
         return response;
     } else {
-        logger("节点链接失败，请检查网络或账户信息。", "error");
+        logger("Failed to link node. Please check your network or account information.", "error");
     }
 }
 
@@ -49,12 +49,12 @@ async function login(email, password) {
     );
 
     if (response.access_token) {
-        logger("登录成功！", "success");
+        logger("Login successful!", "success");
         logger(`Access Token: ${response.access_token}`);
         logger(`Refresh Token: ${response.refresh_token}`);
         return response;
     } else {
-        logger("登录失败，请检查邮箱和密码。", "error");
+        logger("Login failed. Please check your email and password.", "error");
         return null;
     }
 }
@@ -62,7 +62,7 @@ async function login(email, password) {
 async function saveTokenToFile(access_token, refresh_token) {
     const tokenLine = `${access_token}|${refresh_token}\n`;
     await fs.appendFile('token.txt', tokenLine, 'utf-8');
-    logger("令牌已成功保存到 token.txt 文件！", "success");
+    logger("Token successfully saved to token.txt file!", "success");
 }
 
 async function main() {
@@ -72,8 +72,8 @@ async function main() {
     });
 
     try {
-        const email = await rl.question("请输入您的邮箱: ");
-        const password = await rl.question("请输入您的密码: ", { hideEchoBack: true });
+        const email = await rl.question("Please enter your email: ");
+        const password = await rl.question("Please enter your password: ", { hideEchoBack: true });
 
         const tokens = await login(email, password);
 
@@ -86,7 +86,7 @@ async function main() {
             await linkNode(unique_id);
         }
     } catch (error) {
-        logger(`发生错误: ${error.message}`, "error");
+        logger(`An error occurred: ${error.message}`, "error");
     } finally {
         rl.close();
     }

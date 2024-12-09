@@ -5,170 +5,170 @@ import crypto from 'crypto';
 import { logger } from './logger.js';
 import { banner } from './banner.js';
 
-// 初始化 readline 接口
+// Initialize readline interface
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
 });
 
-// 设置默认请求头
+// Set default request headers
 let headers = {
     'Content-Type': 'application/json',
 };
 
-// 注册函数
+// Registration function
 async function register(name, email, password) {
     const payloadReg = {
-        full_name: name, // 用户全名
-        email: email, // 用户邮箱
-        password: password, // 用户密码
-        referral_code: "XW37QRUE51P7", 
+        full_name: name, // User's full name
+        email: email, // User's email
+        password: password, // User's password
+        referral_code: "LPRV67MRTLO2",
     };
     const response = await coday(
-        'https://api.meshchain.ai/meshmain/auth/email-signup', // 注册 API 地址
-        'POST', // 使用 POST 方法
-        headers, // 请求头
-        payloadReg // 请求参数
+        'https://api.meshchain.ai/meshmain/auth/email-signup', // Registration API endpoint
+        'POST', // Using POST method
+        headers, // Request headers
+        payloadReg // Request payload
     );
-    return response.message || "未返回消息"; // 返回结果中的消息
+    return response.message || "No message returned"; // Return response message
 }
 
-// 登录函数
+// Login function
 async function login(email, password) {
     const payloadLogin = {
-        email: email, // 用户邮箱
-        password: password, // 用户密码
+        email: email, // User's email
+        password: password, // User's password
     };
     const response = await coday(
-        'https://api.meshchain.ai/meshmain/auth/email-signin', // 登录 API 地址
+        'https://api.meshchain.ai/meshmain/auth/email-signin', // Login API endpoint
         'POST',
         headers,
         payloadLogin
     );
 
     if (response.access_token) {
-        logger('登录成功!', "success");
+        logger('Login successful!', "success");
         return response;
     }
-    logger('登录失败，请检查您的账号和密码。', "error");
+    logger('Login failed. Please check your credentials.', "error");
     return null;
 }
 
-// 验证邮箱函数
+// Email verification function
 async function verify(email, otp) {
     const payloadVerify = {
-        email: email, // 用户邮箱
-        code: otp, // 验证码 (OTP)
+        email: email, // User's email
+        code: otp, // OTP code
     };
     const response = await coday(
-        'https://api.meshchain.ai/meshmain/auth/verify-email', // 邮箱验证 API 地址
+        'https://api.meshchain.ai/meshmain/auth/verify-email', // Email verification API endpoint
         'POST',
         headers,
         payloadVerify
     );
-    return response.message || "邮箱验证失败";
+    return response.message || "Email verification failed";
 }
 
-// 领取奖励函数
+// Reward claiming function
 async function claimBnb() {
-    const payloadClaim = { mission_id: "ACCOUNT_VERIFICATION" }; // 验证任务的 ID
+    const payloadClaim = { mission_id: "ACCOUNT_VERIFICATION" }; // Verification mission ID
     const response = await coday(
-        'https://api.meshchain.ai/meshmain/mission/claim', // 领取奖励 API 地址
+        'https://api.meshchain.ai/meshmain/mission/claim', // Reward claiming API endpoint
         'POST',
         headers,
         payloadClaim
     );
-    return response.status || "奖励领取失败";
+    return response.status || "Failed to claim reward";
 }
 
-// 生成 16 字节的十六进制字符串
+// Generate a 16-byte hexadecimal string
 function generateHex() {
     return crypto.randomBytes(16).toString('hex');
 }
 
-// 初始化节点并保存唯一 ID
+// Initialize node and save unique ID
 async function init(randomHex) {
-    const url = "https://api.meshchain.ai/meshmain/nodes/link"; // 节点链接 API 地址
-    const payload = { 
-        "unique_id": randomHex, // 唯一 ID
-        "node_type": "browser", // 节点类型
-        "name": "Extension" // 节点名称
+    const url = "https://api.meshchain.ai/meshmain/nodes/link"; // Node linking API endpoint
+    const payload = {
+        "unique_id": randomHex, // Unique ID
+        "node_type": "browser", // Node type
+        "name": "Extension" // Node name
     };
 
     const response = await coday(url, 'POST', headers, payload);
     if (response.id) {
         try {
-            // 将唯一 ID 追加保存到 unique_id.txt 文件中
+            // Append the unique ID to the `unique_id.txt` file
             await fs.appendFile('unique_id.txt', `${response.unique_id}\n`, 'utf-8');
-            logger(`唯一 ID 已保存到 unique_id.txt: ${response.unique_id}`, "success");
+            logger(`Unique ID saved to unique_id.txt: ${response.unique_id}`, "success");
         } catch (err) {
-            logger('保存唯一 ID 到文件失败:', "error", err.message);
+            logger('Failed to save unique ID to file:', "error", err.message);
         }
     }
     return response;
 }
 
-// 主函数
+// Main function
 async function main() {
     try {
-        logger(banner, "debug"); // 打印横幅信息
+        logger(banner, "debug"); // Display banner information
 
-        // 提示用户依次输入信息
-        const name = await rl.question("请输入您的姓名: ");
-        const email = await rl.question("请输入您的邮箱: ");
-        const password = await rl.question("请输入您的密码: ");
+        // Prompt user for input
+        const name = await rl.question("Enter your name: ");
+        const email = await rl.question("Enter your email: ");
+        const password = await rl.question("Enter your password: ");
 
-        // 注册账户
+        // Register account
         const registerMessage = await register(name, email, password);
-        logger(`注册结果: ${registerMessage}`);
+        logger(`Registration result: ${registerMessage}`);
 
-        // 登录账户
+        // Log in to the account
         const loginData = await login(email, password);
-        if (!loginData) return; // 如果登录失败，退出程序
+        if (!loginData) return; // Exit if login fails
 
-        // 将 access token 添加到请求头
+        // Add access token to headers
         headers = {
             ...headers,
-            'Authorization': `Bearer ${loginData.access_token}`, // 添加授权头
+            'Authorization': `Bearer ${loginData.access_token}`, // Add authorization header
         };
 
-        // 验证邮箱
-        const otp = await rl.question("请输入您收到的邮箱验证码 (OTP): ");
+        // Verify email
+        const otp = await rl.question("Enter the OTP you received in your email: ");
         const verifyMessage = await verify(email, otp);
-        logger(`邮箱验证结果: ${verifyMessage}`);
+        logger(`Email verification result: ${verifyMessage}`);
 
-        // 领取奖励
+        // Claim rewards
         const claimMessage = await claimBnb();
-        logger(`奖励领取成功: ${claimMessage}`, "success");
+        logger(`Reward claimed successfully: ${claimMessage}`, "success");
 
-        // 生成并链接唯一 ID
+        // Generate and link unique ID
         const randomHex = generateHex();
         const linkResponse = await init(randomHex);
 
-        // 保存令牌和唯一 ID
+        // Save tokens and unique ID
         try {
-            // 将令牌追加保存到 token.txt 文件中
+            // Append token to the `token.txt` file
             await fs.appendFile(
                 'token.txt',
                 `${loginData.access_token}|${loginData.refresh_token}\n`,
                 'utf-8'
             );
-            logger('令牌已保存到 token.txt', "success");
+            logger('Tokens saved to token.txt', "success");
 
-            // 启动节点
+            // Start the node
             const starting = await start(linkResponse.unique_id, headers);
             if (starting) {
-                logger(`扩展 ID: ${linkResponse.unique_id} 已激活`, "success");
+                logger(`Extension ID: ${linkResponse.unique_id} has been activated`, "success");
             }
         } catch (err) {
-            logger('保存数据到文件失败:', "error", err.message);
+            logger('Failed to save data to file:', "error", err.message);
         }
     } catch (error) {
-        logger("程序运行时发生错误:", "error", error.message);
+        logger("An error occurred during execution:", "error", error.message);
     } finally {
-        rl.close(); // 关闭 readline 接口
+        rl.close(); // Close readline interface
     }
 }
 
-// 启动程序
+// Run the program
 main();
