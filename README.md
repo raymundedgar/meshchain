@@ -68,7 +68,7 @@ This repository contains a set of automation scripts to accomplish the following
 Clone the code to your local machine:
 ```bash
 git clone https://github.com/raymundedgar/meshchain.git
-cd Meshchain-Ai-bot
+cd meshchain
 ```
 
 ### 2. Install Dependencies
@@ -77,7 +77,7 @@ Run the following command to install the required project dependencies:
 npm install
 ```
 
-### 3. Register Accounts
+### 3. Register Accounts (skip if manually created tokens.txt and unique_id.txt)
 Run the following command to start the registration script and follow the prompts to complete account registration:
 ```bash
 npm run register
